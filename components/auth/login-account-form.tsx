@@ -17,7 +17,7 @@ const formSchema = z.object({
     .email({ message: "Must be a valid email" }),
   password: z
     .string({ required_error: "Password is required" })
-    .min(7, { message: "Password must have at least 7 characters" }),
+    .min(8, { message: "Password must have at least 8 characters" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -93,7 +93,7 @@ export default function LoginAccountForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="Password" type="password" {...field}
+                  <Input placeholder="Password" {...field}
                     icon={<Lock className="text-gray-500 w-4 h-4 mr-2" />}
                   />
                 </FormControl>

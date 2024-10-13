@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/tabs"
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { redirect } from "next/dist/server/api-utils";
+import { redirect } from "next/navigation"; // Import o redirect correto
 import { cookies } from "next/headers";
 import { RedirectType } from "next/navigation";
 

@@ -8,8 +8,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "../ui/input";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from "../ui/button";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { GitHubLogoIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { Lock, Mail, User } from "lucide-react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z
@@ -19,7 +21,7 @@ const formSchema = z.object({
     .email({ message: "Must be a valid email" }),
   password: z
     .string({ required_error: "Password is required" })
-    .min(7, { message: "Password must have at least 7 characters" }),
+    .min(8, { message: "Password must have at least 8 characters" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -27,42 +29,75 @@ type FormData = z.infer<typeof formSchema>;
 export default function CreateAccountForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false)
-  const [submitResult, setSubmitResult] = useState<string | null>(null);
+  const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name:"",
+      name: "",
       email: "",
       password: "",
     }
   });
 
-  const onSubmit = async (data: FormData) => {
-    setSubmitResult("Form submitted successfully!");
+  const onSubmit = async (values: FormData) => {
+    setLoading(true);
 
     try {
-      setLoading(true);
-      console.log(data);
+      const supabase = createClientComponentClient();
+      const { email, password } = values;
 
-      setTimeout(() => {
-        setSubmitResult("Form submitted successfully!");
-
-        toast({
-          title: 'Parabéns!',
-          description: 'Cadastro realizado com sucesso.',
-          variant: 'success',
-        });
-
-        setLoading(false);
-      }, 2000);
-
-    } catch (error) {
-      toast({
-        title: 'Erro ao realizar o cadastro',
-        description: 'Por favor, verifique os dados e tente novamente.',
-        variant: 'error',
+      const { error, data: { user } } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${location.origin}/auth/callback`
+        }
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (user) {
+        form.reset(); 
+        toast({
+          title: "Success!",
+          description: "Account created successfully. Please check your email to verify your account.",
+          variant: "success",
+        });
+        router.push("/"); 
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "There was an issue creating your account.",
+        variant: "error",
+      });
+    } finally {
+      setLoading(false); 
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    setLoading(true);
+    try {
+      const supabase = createClientComponentClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with GitHub.",
+        variant: "error",
+      });
+    } finally {
       setLoading(false);
     }
   };
@@ -110,7 +145,7 @@ export default function CreateAccountForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="Password" type="password" {...field}
+                  <Input placeholder="Password" {...field}
                     icon={<Lock className="text-gray-500 w-4 h-4 mr-2" />}
                   />
                 </FormControl>
@@ -124,6 +159,20 @@ export default function CreateAccountForm() {
               <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               'Create Account'
+            )}
+          </Button>
+          <Button
+            onClick={handleGitHubSignIn}
+            disabled={loading}
+            className="flex items-center justify-center w-full mt-2"
+          >
+            {loading ? (
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <GitHubLogoIcon className="mr-2 h-4 w-4" />
+                Sign in with GitHub
+              </>
             )}
           </Button>
         </form>
