@@ -8,8 +8,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { GitHubLogoIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { Lock, Mail } from "lucide-react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z
@@ -17,15 +19,17 @@ const formSchema = z.object({
     .email({ message: "Must be a valid email" }),
   password: z
     .string({ required_error: "Password is required" })
-    .min(8, { message: "Password must have at least 8 characters" }),
+    .min(7, { message: "Password must have at least 7 characters" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function LoginAccountForm() {
-  const [submitResult, setSubmitResult] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false)
   const { toast } = useToast();
+  const router = useRouter()
+  
+  const [loading, setLoading] = useState(false)
+  const [loadingGitHub, setLoadingGitHub] = useState(false)
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -35,34 +39,74 @@ export default function LoginAccountForm() {
     }
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (values: FormData) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
-      console.log(data);
+      const supabase = createClientComponentClient();
+      const { email, password } = values;
 
-      setTimeout(() => {
-        setSubmitResult("Form submitted successfully!");
+      const { error, data: { session } } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (session) {
+        form.reset(); 
         toast({
-          title: 'Sucesso!',
-          description: 'Login realizado com sucesso.',
+          title: "Welcome!",
+          description: "User successfully logged in.",
+          variant: "success",
+        });
+        router.refresh(); 
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "There was an issue creating your account.",
+        variant: "error",
+      });
+    } finally {
+      setLoading(false); 
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    setLoadingGitHub(true); 
+    try {
+      const supabase = createClientComponentClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${location.origin}/auth/callback`,
+        },
+      });
+  
+      if (error) throw new Error(error.message);
+  
+      setTimeout(() => {
+        router.refresh(); 
+        toast({
+          title: 'Welcome!',
+          description: 'User successfully logged in.',
           variant: 'success',
         });
-
-        setLoading(false);
-
+        setLoadingGitHub(false); 
       }, 2000);
-
-    } catch (error) {
+      
+    } catch (error: any) {
       toast({
-        title: 'Erro ao realizar o login',
-        description: 'Por favor, verifique os dados e tente novamente.',
-        variant: 'error',
+        title: "Error",
+        description: error.message || "Failed to sign in with GitHub.",
+        variant: "error",
       });
-      setLoading(false);
+      setLoadingGitHub(false); 
     }
-    console.log(data);
-  };
+  };  
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -110,6 +154,20 @@ export default function LoginAccountForm() {
             )}
           </Button>
 
+          <Button
+            onClick={handleGitHubSignIn}
+            disabled={loadingGitHub}
+            className="flex items-center justify-center w-full mt-2"
+          >
+            {loadingGitHub ? (
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <GitHubLogoIcon className="mr-2 h-4 w-4" />
+                Sign in with GitHub
+              </>
+            )}
+          </Button>
         </form>
       </Form>
     </div>

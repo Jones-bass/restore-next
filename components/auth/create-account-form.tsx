@@ -13,23 +13,26 @@ import { Lock, Mail, User } from "lucide-react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 
+
 const formSchema = z.object({
   name: z
-    .string({ required_error: "Email is required" }),
+  .string({ required_error: "Email is required" }),
   email: z
-    .string({ required_error: "Email is required" })
-    .email({ message: "Must be a valid email" }),
+  .string({ required_error: "Email is required" })
+  .email({ message: "Must be a valid email" }),
   password: z
-    .string({ required_error: "Password is required" })
-    .min(8, { message: "Password must have at least 8 characters" }),
+  .string({ required_error: "Password is required" })
+  .min(8, { message: "Password must have at least 8 characters" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function CreateAccountForm() {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false)
   const router = useRouter();
+  const { toast } = useToast();
+ 
+  const [loading, setLoading] = useState(false)
+  const [loadingGitHub, setLoadingGitHub] = useState(false)
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -66,7 +69,7 @@ export default function CreateAccountForm() {
           description: "Account created successfully. Please check your email to verify your account.",
           variant: "success",
         });
-        router.push("/"); 
+        router.refresh(); 
       }
     } catch (error: any) {
       toast({
@@ -80,7 +83,7 @@ export default function CreateAccountForm() {
   };
 
   const handleGitHubSignIn = async () => {
-    setLoading(true);
+    setLoadingGitHub(true); 
     try {
       const supabase = createClientComponentClient();
       const { error } = await supabase.auth.signInWithOAuth({
@@ -89,18 +92,28 @@ export default function CreateAccountForm() {
           redirectTo: `${location.origin}/auth/callback`,
         },
       });
-
+  
       if (error) throw new Error(error.message);
+  
+      setTimeout(() => {
+        router.refresh(); 
+        toast({
+          title: 'Welcome!',
+          description: 'User successfully logged in.',
+          variant: 'success',
+        });
+        setLoadingGitHub(false); 
+      }, 2000);
+      
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to sign in with GitHub.",
         variant: "error",
       });
-    } finally {
-      setLoading(false);
+      setLoadingGitHub(false); 
     }
-  };
+  };  
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -163,10 +176,10 @@ export default function CreateAccountForm() {
           </Button>
           <Button
             onClick={handleGitHubSignIn}
-            disabled={loading}
+            disabled={loadingGitHub}
             className="flex items-center justify-center w-full mt-2"
           >
-            {loading ? (
+            {loadingGitHub ? (
               <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <>

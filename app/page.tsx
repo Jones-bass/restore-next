@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/tabs"
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { redirect } from "next/navigation"; // Import o redirect correto
+import { redirect } from "next/navigation"; 
 import { cookies } from "next/headers";
 import { RedirectType } from "next/navigation";
 
@@ -41,10 +41,10 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col h-screen w-full justify-center items-center">
-      <Tabs defaultValue="create-account" className="w-[400px] botder rounded-md pb-4 shadow-2xl">
+      <Tabs defaultValue="create-account" className="w-96 botder rounded-md pb-4 shadow-2xl">
         <TabsList className="flex justify-around items-center rounded-b-none h-14">
-          <TabsTrigger className="transition-all delay-150" value="create-account">Account</TabsTrigger>
-          <TabsTrigger className="transition-all delay-150" value="login">Login</TabsTrigger>
+          <TabsTrigger className="transition-all delay-150 w-full h-full" value="create-account">Account</TabsTrigger>
+          <TabsTrigger className="transition-all delay-150 w-full h-full" value="login">Login</TabsTrigger>
         </TabsList>
         <TabsContent value="create-account">
 
