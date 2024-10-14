@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 // Importando ícones do Lucide
-import { User, CreditCard, Settings, Users, LogOut } from 'lucide-react'
+import { User, CreditCard, Settings, Users, LogOut, User2 } from 'lucide-react'
 
 interface UserMetadata {
   avatar_url?: string;
@@ -71,7 +71,7 @@ export function UserNav() {
 
   return (
     <>
-      {!user && <Link href={"/"}>Login</Link>}
+      {!user && <User2 />}
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
