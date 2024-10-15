@@ -21,7 +21,6 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-// Importando ícones do Lucide
 import { User, CreditCard, Settings, Users, LogOut, User2 } from 'lucide-react'
 
 interface UserMetadata {

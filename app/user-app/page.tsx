@@ -11,6 +11,7 @@ import UserAppHeader from "@/components/user-app/user-app-headers";
 import { PlusCircleIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAppSidebar } from "@/components/user-app/user-app-sidebar";
+import ImageUploadPlaceholder from "@/components/user-app/image-upload-placeholder";
 
 export default async function UserApp() {
   let loggedIn = false;
@@ -35,29 +36,29 @@ export default async function UserApp() {
         <div className="border-t">
           <div className="bg-background">
             <div className="grid lg:grid-cols-5">
-              <UserAppSidebar className="hidden lg:block"/>
+              <UserAppSidebar className="hidden lg:block" />
               <div className="col-span-3 lg:col-span-4 lg:border-l">
                 <div className="h-full px-4 py-6 lg:px-8">
                   <Tabs defaultValue="music" className="h-full space-y-6">
                     <div className="space-between flex items-center">
                       <TabsList>
-                        <TabsTrigger value="music" className="relative">
-                          Music
+                        <TabsTrigger value="photo" className="relative">
+                          Photos
                         </TabsTrigger>
-                        <TabsTrigger value="podcasts">Podcasts</TabsTrigger>
-                        <TabsTrigger value="live" disabled>
-                          Live
+                        <TabsTrigger value="document">Documents</TabsTrigger>
+                        <TabsTrigger value="other" disabled>
+                          Others
                         </TabsTrigger>
                       </TabsList>
                       <div className="ml-auto mr-4">
                         <Button>
                           <PlusCircleIcon className="mr-2 h-4 w-4" />
-                          Add music
+                          Add Collection
                         </Button>
                       </div>
                     </div>
                     <TabsContent
-                      value="music"
+                      value="photo"
                       className="border-none p-0 outline-none"
                     >
                       <div className="flex items-center justify-between">
@@ -72,7 +73,7 @@ export default async function UserApp() {
                       </div>
                       <Separator className="my-4" />
                       <div className="relative">
-              
+                        <ImageUploadPlaceholder />
                       </div>
                       <div className="mt-6 space-y-1">
                         <h2 className="text-2xl font-semibold tracking-tight">
@@ -83,8 +84,25 @@ export default async function UserApp() {
                         </p>
                       </div>
                       <Separator className="my-4" />
-                      <div className="relative">                     
-                     </div>
+                      <div className="relative">
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent
+                      value="document"
+                      className="h-full flex-col border-none p-0 data-[state=active]:flex"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <h2 className="text-2xl font-semibold tracking-tight">
+                            New Episodes
+                          </h2>
+                          <p className="text-sm text-muted-foreground">
+                            Your favorite podcasts. Updated daily.
+                          </p>
+                        </div>
+                      </div>
+                      <Separator className="my-4" />
                     </TabsContent>
                   </Tabs>
                 </div>
